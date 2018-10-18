@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Game</title>
+	<style>
+		* { padding: 0; margin: 0; }
+		canvas { background: #eee; display: block; margin: 0 auto; }
+	</style>
+</head>
+<body>
+
+<canvas id ="myCanvas" width="480" height="320"></canvas>
+
+<script>
+	// Javascript code
+	var canvas = document.getElementById("myCanvas");
+	var ctx = canvas.getContext("2d");
+
+
+
+	var BASECOLOR = [255, 255, 255, 255];
+	var WALLCOLOR = [0,0,0,255];
+
+	var personalityTypes = {NEUTRAL: 0, AGGRESSIVE: 1, SHY: 3, GUIDING: 4, TERRITORIAL: 5, CURIOUS: 6 , SAD: 7, PROTECTIVE: 8};
+
+	var sightPoint = [240, 200];
+
+	ctx.fillRect(100,100,10,10);
+
+	ctx.fillRect(200,100,30,30);
+
+	ctx.fillRect(400,250,25,25);
+
+	//ctx.rect(220,180,150,100);
+	//ctx.rect(219,179,152,102);
+	//ctx.rect(218,1178,154,104);
+	//ctx.stroke(); 
+
+
+	ctx.beginPath();
+	ctx.arc(sightPoint[0], sightPoint[1], 5, 0, 2*Math.PI, false)
+	ctx.fillStyle = 'red';
+	ctx.fill();
+
+
+	function isSameColor(color1, color2){
+		for(var index in color1){
+			if(color2[index] != color1[index]){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	function isWallColor(color){
+		for(var i = 0; i < 3; i++){
+			if(WALLCOLOR[i] != color[i]){
+				return false;
+			}
+
+		}
+
+		if (color[3] == 0){
+			return false;
+		}
+		
+		return true;
+	}
+
+	function rayCast(x, y, viewRange, viewDirection, n){
+		var angleStart = viewDirection - (viewRange/2);
+		var angleEnd = viewDirection + (viewRange/2);
+		var angleInc = viewRange/n;
+		var distInc = 5;
+
+		for(k = 0; k < n; k++){
+			console.log(k);
+			var angle = angleStart + angleInc * k;
+
+			pixelColor = BASECOLOR;
+			var i = 0;
+
+			var xAbs = x;
+			var yAbs = y;
+			var xPrev = -1;
+			var yPrev = -1;
+
+			var draw = true;
+
+			var xPosAngle = Math.cos(angle);
+			var yPosAngle = Math.sin(angle);
+			while (draw){
+				var distance = distInc * i;
+				var xPos = Math.round(distance*xPosAngle);
+				var yPos = Math.round(distance*yPosAngle);
+
+				i++;
+
+				xAbs = x + xPos;
+				yAbs = y - yPos; //the y axis is inverted
+
+				if (xAbs == xPrev && yAbs == yPrev){
+					continue;
+				}
+/*
+				console.log("loop", i);
+				console.log(viewRange);
+				console.log(viewDirection);
+				console.log(angleStart);
+				console.log(angleEnd);
+				console.log(angleInc);
+				console.log(angle);
+				console.log(distance);
+				console.log(xPos);
+				console.log(xAbs);
+*/
+				var pixelColor = ctx.getImageData(xAbs, yAbs, 1, 1).data;
+				
+
+				if (xAbs >= canvas.width || yAbs >= canvas.height || xAbs <= 0 || yAbs <= 0 || isWallColor(pixelColor)){
+					draw = false;
+					break;
+				}
+
+				if ((pixelColor != [0,0,0,0]))
+				{
+					console.log((i-1), xAbs, yAbs, xPos, yPos, xPosAngle, yPosAngle, distance, angle*180/Math.PI, pixelColor, isWallColor(pixelColor));
+				}
+				//console.log(pixelColor);
+				
+				if(k == 0){
+					ctx.fillStyle = "yellow";
+				}
+				else{
+					ctx.fillStyle = "red";
+				}
+				if(isSameColor(pixelColor, [0,0,0,0])){
+					ctx.fillStyle = "blue";
+				}
+				ctx.fillRect(xAbs, yAbs, 1, 1);
+				
+
+				xPrev = xAbs;
+				yPrev = yAbs;
+				
+			}
+			console.log("i:", i );
+			console.log("angle:", angle*180/Math.PI);
+			console.log(angleStart*180/Math.PI);
+			console.log(angleEnd*180/Math.PI);
+			console.log("This should happen a couple times", k);
+			//console.log(canvas.width);
+		}
+	}
+/*
+	function AStarSearch(){
+
+	}
+
+	class Spider {
+		constructor(x, y, personality){
+			Spider.x = x;
+			Spider.y = y;
+			Spider.personality = personality;
+		}
+
+		moveStep(){
+
+
+		}
+
+
+
+		setDestination(target){
+			Spider.target = target;
+		}
+
+
+	}
+*/
+
+rayCast(sightPoint[0], sightPoint[1], (Math.PI*.5), (Math.PI*.6), 30);
+
+//rayCast(sightPoint[0], sightPoint[1], (Math.PI*2), (Math.PI*1.10), 30);
+
+/*
+for (y = 0; y < canvas.height; y++){
+	for (x = 0; x < canvas.width; x++){
+		var pixelColor = ctx.getImageData(x, y, 1, 1).data;
+		if(!isSameColor(pixelColor, [0,0,0,255])){
+			var imgData = ctx.createImageData(1, 1);
+			imgData.data[0] = 0;
+			imgData.data[1] = 0;
+			imgData.data[2] = 255;
+			imgData.data[3] = 255;
+			ctx.putImageData(imgData, x, y)
+			console.log(x, y);
+		}
+	}
+}
+
+*/
+
+console.log
+
+</script>
+
+</body>
+</html>
